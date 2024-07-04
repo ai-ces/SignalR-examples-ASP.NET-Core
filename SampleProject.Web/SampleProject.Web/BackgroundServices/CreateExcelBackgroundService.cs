@@ -18,7 +18,7 @@ namespace SampleProject.Web.BackgroundServices
             {
 
 
-                await Task.Delay(4000);
+                await Task.Delay(3000);
 
 
                 var (userId, products) = await channel.Reader.ReadAsync(stoppingToken);
