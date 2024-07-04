@@ -1,5 +1,9 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
+using SampleProject.Web.BackgroundServices;
+using SampleProject.Web.Hubs;
 using SampleProject.Web.Models;
 using SampleProject.Web.Services;
 using System.Threading.Channels;
@@ -9,7 +13,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
-
+builder.Services.AddSingleton<IFileProvider>(new PhysicalFileProvider(Directory.GetCurrentDirectory()));
 builder.Services.AddScoped<FileService>();
 builder.Services.AddSingleton(Channel.CreateUnbounded<(string userId, List<Product> products)>());
 
@@ -23,6 +27,10 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddIdentity<IdentityUser, IdentityRole>().AddEntityFrameworkStores<AppDbContext>();
 
 
+builder.Services.AddHostedService<CreateExcelBackgroundService>();
+
+builder.Services.AddSignalR();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -35,7 +43,7 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-
+app.MapHub<AppHub>("/hub");
 app.UseRouting();
 
 app.UseAuthorization();
